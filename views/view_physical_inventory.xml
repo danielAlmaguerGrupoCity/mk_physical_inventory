@@ -1,0 +1,438 @@
+<?xml version="1.0"?>
+<odoo>
+  <record id="view_physical_inventory_line_tree" model="ir.ui.view">
+    <field name="name">Conteos</field>
+    <field name="model">physical.inventory.line</field>
+    <field name="type">tree</field>
+    <field name="arch" type="xml">
+      <tree string="Conteos" editable="top" >
+        <field required="1" name="product_id" 
+        options="{
+          'no_create' : True,
+          'no_open' : True,
+          'no_quick_create' : True,
+          'no_create_edit' : True }"
+        force_save="1" attrs="{'readonly': [('state', '=', 'canceled')]}" />
+        <field required="1" name="loc_stock_id" attrs="{'readonly': [('state', '=', 'canceled')]}" />
+        <field required="1" name="product_uom_qty" attrs="{'readonly': [('state', '=', 'canceled')]}"/>
+        <field required="1" readonly="1" name="product_uom" optional="hide"/>
+        <field required="1" name="quantity_box" invisible="1" attrs="{'readonly': [('state', 'in', ('canceled'))]}"/>
+        <field name="product_count"  invisible="1" />
+        <field required="1" name="piezas_caja" invisible="1" optional="hide"/>
+        <field required="1" readonly="1" name="date_inventory_line" optional="hide"/>
+        <field readonly="1" name="user_id" optional="hide"/>
+        <field required="1" name="state" optional="hide"  decoration-success="state == 'count'" decoration-warning="state == 'draft'" decoration-danger="state == 'canceled'" widget="badge"/>
+        <field required="1" name="product_uom_category_id" invisible="1"/>
+        <field required="1" name="company_id" invisible="1"/>
+      </tree>
+    </field>
+  </record>
+  <record id="physical_inventory_line_tree_search_view" model="ir.ui.view">
+    <field name="name">physical.inventory.line.search</field>
+    <field name="model">physical.inventory.line</field>
+    <field eval="10" name="priority"/>
+    <field name="arch" type="xml">
+      <search string="Margin">
+        <field name="product_id"   options="{
+          'no_create' : True,
+          'no_open' : True,
+          'no_quick_create' : True,
+          'no_create_edit' : True }"/>
+        <field name="loc_stock_id"/>
+        <field name="user_id"/>
+        <filter name="filter_valid" domain="[('state', '!=', 'canceled')]" 
+            string="Validos"/>
+        <group expand='0' string='Group by...'>
+          <filter string='Producto' name="countgroup" context="{'group_by': 'product_id'}"/>
+          <filter string='No Conteo' name="productgroup" context="{'group_by': 'product_count'}"/>
+          <filter string='Ubicación' name="loc_stock_idgroup" domain="[]" context="{'group_by': 'loc_stock_id'}"/>
+          <filter string='Usuario' name="user_idgroup" domain="[]" context="{'group_by': 'user_id'}"/>
+          <filter string='Estado' name="stategroup" domain="[]" context="{'group_by': 'state'}"/>
+        </group>
+      </search>
+    </field>
+  </record>
+  <record id="view_phy_inv_prod_count" model="ir.ui.view">
+    <field name="name">Productos a contar</field>
+    <field name="model">phy.inv.prod.count</field>
+    <field name="type">tree</field>
+    <field name="arch" type="xml">
+      <tree create="false" delete="false" string="Conteos">
+        <field name="loc_id" force_save="1"   />
+        <field name="product_id" force_save="1"    options="{
+          'no_create' : True,
+          'no_open' : True,
+          'no_quick_create' : True,
+          'no_create_edit' : True }" />
+        <field name="product_uom" force_save="1"   />
+        <field name="product_uom_qty" force_save="1"   />
+        <field name="product_count" force_save="1" invisible="1"  />
+        <field name="user_id" optional="hide"/>
+        <field name="state" force_save="1" decoration-success="state == 'count'" decoration-warning="state == 'for_count'" widget="badge"  />
+        <field name="company_id" invisible="1"/>
+      </tree>
+    </field>
+  </record>
+  <record id="view_prod_count_search_view" model="ir.ui.view">
+    <field name="name">phy.inv.prod.count.search</field>
+    <field name="model">phy.inv.prod.count</field>
+    <field eval="10" name="priority"/>
+    <field name="arch" type="xml">
+      <search string="Margin">
+        <field name="product_id"/>
+        <field name="loc_id"/>
+        <group expand='0' string='Group by...'>
+          <filter string='Producto' name="productgroup" context="{'group_by': 'product_id'}"/>
+          <filter string='Estado' name="stategroup" context="{'group_by': 'state'}"/>
+          <filter string='Ubicación' name="loc_stock_idgroup" domain="[]" context="{'group_by': 'loc_id'}"/>
+        </group>
+      </search>
+    </field>
+  </record>
+  <record id="view_adjustment_inventory" model="ir.ui.view">
+    <field name="name">Ajustes de inventario</field>
+    <field name="model">stock.adjusment</field>
+    <field name="type">tree</field>
+    <field name="arch" type="xml">
+      <tree editable="top" decoration-danger="product_uom_qty_dif != 0" decoration-success="product_uom_qty_dif == 0">
+        <header>
+          <button name="action_set_inventory_recount"  confirm="¿Está seguro que hacer un reconteo?" type="object" string="Reconteo" class="btn text-warning" icon="fa-bullseye"/>
+        </header>
+        <field required="1" name="loc_id"/>
+        <field required="1" name="product_id"/>
+        <field name="product_name" optional="hide"/>
+        <field required="1" readonly="1" name="product_uom"/>
+        <field required="1" name="product_teor"/>
+        <field required="1" name="product_uom_qty"/>
+        <field required="1" name="product_uom_qty_dif"/>
+        <field required="1" name="product_qty_dif_per"/>
+        <field  name="product_qty_dif_mon"/>
+        <field  name="recount"  widget="toggle_button"  readonly="1"  optional="hide"/>
+        <field required="1" name="company_id" invisible="1"/>
+      </tree>
+    </field>
+  </record>
+  <record id="view_adjustment_inventory_search_view" model="ir.ui.view">
+    <field name="name">stock.adjusment.search</field>
+    <field name="model">stock.adjusment</field>
+    <field eval="10" name="priority"/>
+    <field name="arch" type="xml">
+      <search string="Margin">
+        <field name="product_id"/>
+        <field name="product_name"/>
+        <field name="loc_id"/>
+        <filter name="filter_zero" domain="[('product_uom_qty_dif', '!=', 0)]" 
+            string="Diferente de 0"/>
+        <filter name="filter_recount" domain="[('recount', '=', False),('product_uom_qty_dif', '!=', 0)]" 
+            string="Diferencias por recontar"/>
+        <filter name="filter_forrecount" domain="[('recount', '=', True)]" 
+            string="Por recontar"/>
+        <group expand='0' string='Group by...'>
+          <filter string='Producto' name="productgroup" context="{'group_by': 'product_id'}"/>
+          <filter string='Ubicación' name="loc_stock_idgroup" domain="[]" context="{'group_by': 'loc_id'}"/>
+        </group>
+      </search>
+    </field>
+  </record>
+  <record id="action_physical_inventory_line" model="ir.actions.act_window">
+    <field name="name">Conteo</field>
+    <field name="res_model">physical.inventory.line</field>
+    <field name="view_mode">tree</field>
+    <field name="domain">[('inventory_id', '=', active_id)]</field>
+    <field name="context">{'default_active_id': active_id}</field>
+  </record>
+  <!--
+  <record id="action_physical_inventory_recount" model="ir.actions.act_window">
+    <field name="name">Reconteo</field>
+    <field name="res_model">physical.inventory.recount</field>
+    <field name="view_mode">tree</field>
+    <field name="domain">[('inventory_id', '=', active_id)]</field>
+    <field name="context">{'default_active_id': active_id}</field>
+  </record>
+-->
+  <record id="view_product_tree_inventory" model="ir.ui.view">
+    <field name="name">Productos a contar</field>
+    <field name="model">product.product</field>
+    <field name="type">tree</field>
+    <field name="arch" type="xml">
+      <tree  create="false" delete="false">
+        <!-- Define los campos que deseas mostrar en la vista de árbol -->
+        <field name="default_code"/>
+        <field name="barcode"/>
+        <field name="name"/>
+        <!-- Añade otros campos según sea necesario -->
+      </tree>
+    </field>
+  </record>
+  <record id="view_users_tree_inventory" model="ir.ui.view">
+    <field name="name">Usuarios</field>
+    <field name="model">res.users</field>
+    <field name="type">tree</field>
+    <field name="arch" type="xml">
+      <tree create="false" delete="false">
+        <!-- Define los campos que deseas mostrar en la vista de árbol -->
+        <field name="name"/>
+        <field name="login"/>
+        <!-- Añade otros campos según sea necesario -->
+      </tree>
+    </field>
+  </record>
+  <record id="action_adjustment_inventory" model="ir.actions.act_window">
+    <field name="name">Ajustes de inventario</field>
+    <field name="res_model">stock.adjusment</field>
+    <field name="view_mode">tree</field>
+    <field name="domain">[('inventory_id', '=', active_id)]</field>
+    <field name="context">{'default_active_id': active_id}</field>
+  </record>
+  <record id="view_wizard_recount_form" model="ir.ui.view">
+    <field name="name">wizard.recount.form</field>
+    <field name="model">wizard.recount</field>
+    <field name="type">form</field>
+    <field name="arch" type="xml">
+      <form string="error">
+        <field name="inventory_id" invisible="1" readonly="1"/>
+        <label for="team_id" />
+        <div  class="o_row">
+          <field name="team_id"  options="{
+              'no_create' : True,
+              'no_open' : True,
+              'no_quick_create' : True,
+              'no_create_edit' : True }" required="1"/>
+        </div>
+        <field name="product_line" readonly="1"/>
+        <field name="users_team_ids" invisible="1" readonly="1"/>
+        <footer>
+          <button string="Continuar"  confirm="¿Desea continuar?" name="set_recount" type="object" class="btn-primary"/>
+          <button string="Cancelar" class="btn-secondary" special="cancel"/>
+        </footer>
+      </form>
+    </field>
+  </record>
+  <record id="view_wizard_error_count_form" model="ir.ui.view">
+    <field name="name">wizard.error.count.form</field>
+    <field name="model">wizard.error.count</field>
+    <field name="type">form</field>
+    <field name="arch" type="xml">
+      <form string="error">
+        <field nolabel="1" style="color: red; font-size: 20px;"  name="error" readonly="1" />
+        <field nolabel="1"  name="company_id" readonly="1"  invisible="1" />
+        <field nolabel="1"
+       options="{
+        'no_create' : True,
+        'no_open' : True,
+        'no_quick_create' : True,
+        'no_create_edit' : True }"
+        name="product_line" readonly="1" />
+        <footer>
+          <button string="Continuar"  invisible="context.get('aply_adjusment',False) == True" context="{'act_next': True}" name="next" type="object" class="btn-primary"/>
+          <button string="Continuar2" confirm="Este proceso no se puede cancelar ¿Desea continuar?"  invisible="context.get('finish_count',False) == True" context="{'act_next': True}" name="next2" type="object" class="btn-primary"/>
+          <button string="Cancelar" class="btn-secondary" special="cancel"/>
+        </footer>
+      </form>
+    </field>
+  </record>
+  <record id="view_physical_inventory_form" model="ir.ui.view">
+    <field name="name">physical.inventory.form</field>
+    <field name="model">physical.inventory</field>
+    <field name="type">form</field>
+    <field name="arch" type="xml">
+      <form string="dfggf">
+        <header>
+          <button groups="mk_physical_inventory.mk_physical_inventory_admin" name="confirm_inventory" attrs="{'invisible': [('state_inventory', '!=', 'draft')]}"  type="object" string="Confirmar" class="oe_highlight"/>
+          <button groups="mk_physical_inventory.mk_physical_inventory_admin" name="start_count" attrs="{'invisible': [('state_inventory', '!=', 'confirmed')]}"  type="object" string="Iniciar conteo" class="oe_highlight"/>
+          <button groups="mk_physical_inventory.mk_physical_inventory_admin" name="finish_count"  confirm="¿Está seguro de finalizar el conteo?" attrs="{'invisible': [('state_inventory', 'not in', ('count_started','recount'))]}"  type="object" string="Finalizar conteo" class="oe_highlight"/>
+          <button groups="mk_physical_inventory.mk_physical_inventory_apply" name="aply_adjusment" attrs="{'invisible': ['|',
+          '&amp;', ('state_inventory', '=', 'count_finished'),('aprove', '=', False),
+                   ('state_inventory', '!=', 'count_finished')
+          ]}"
+          type="object" confirm="¿Está seguro que desea realizar los ajustes de inventario?" string="Aplicar ajustes" class="oe_highlight"/>
+          <button groups="mk_physical_inventory.mk_physical_inventory_admin" name="set_recount"  confirm="¿Está seguro de iniciar el reconteo?" attrs="{'invisible': [('state_inventory', 'not in', ('count_finished'))]}"  type="object" string="Iniciar Reconteo" class="oe_highlight"/>
+          <button groups="mk_physical_inventory.mk_physical_inventory_admin" name="cancel"  confirm="¿Está seguro cancelar el inventario?" attrs="{'invisible': [('state_inventory', 'in', ('canceled','adjustment_made'))]}"  type="object" string="Cancelar" class="oe_highlight"/>
+          <button groups="mk_physical_inventory.mk_physical_inventory_admin" name="draft"   attrs="{'invisible': [('state_inventory', '!=', 'confirmed')]}"  type="object" string="Restablecer a borrador" class="oe_highlight"/>
+          <field name="state_inventory"  widget="statusbar" statusbar_visible="draft,confirmed,count_started,count_finished,adjustment_made"/>
+          <button name="aprove_inv"  
+          attrs="{'invisible': [ '|',
+                              '&amp;', ('state_inventory', '!=', 'count_finished'), ('aprove', '=', False),
+                              '|','&amp;', ('state_inventory', '=', 'count_finished'), ('aprove', '=', True),
+                              '&amp;', ('state_inventory', '=', 'adjustment_made'), ('aprove', '=', True)
+                                ]}"
+                                
+          type="object"  groups="mk_physical_inventory.mk_physical_inventory_admin_store" string="Aprobar" class="oe_highlight"/>
+        </header>
+        <sheet>
+          <div class="oe_button_box" name="button_box">
+            <button name="action_view_users"  type="object" icon="fa-user"  string="Equipo de inventario" attrs="{'invisible':[('state_inventory', 'in', ('draft'))]}"/>
+            <button name="action_view_products_inventory" type="object" icon="fa-check"  string="Productos a contar" attrs="{'invisible':[('state_inventory', 'in', ('draft'))]}"/>
+            <button name="%(action_physical_inventory_line)d" string="Conteos" icon="fa-check-square-o" attrs="{'invisible': [('state_inventory', 'not in', ('count_started','count_finished','adjustment_made','recount'))]}"  type="action" data-hotkey="k"/>
+            <button name="%(action_adjustment_inventory)d" string="Resumen de diferencias" icon="fa-cubes" attrs="{'invisible':[('state_inventory', 'not in', ('recount','count_finished','adjustment_made'))]}"  type="action" data-hotkey="k"/>
+            <button name="action_view_report_inven"  type="object" icon="fa-list-alt"  confirm="¿Desea ver el reporte de inventario?" string="Reporte inventario" attrs="{'invisible':[('state_inventory', 'not in', ('adjustment_made'))]}"/>
+          </div>
+          <div class="oe_title">
+            <h1>
+              <field name="name" readonly="1"/>
+            </h1>
+          </div>
+          <group >
+            <group attrs="{'readonly': [('state_inventory', 'not in', ('draft',))]}">
+              <field name="reference" attrs="{'readonly': [('state_inventory', '!=', 'draft')]}"/>
+              <field name="company_id" invisible="1"/>
+              <field name="type" attrs="{'readonly': [('state_inventory', '!=', 'draft')]}"/>
+              <field name="user_id" readonly="1"/>
+              <field name="aprove" readonly="1"/>
+            </group>
+            <group>
+              <field name="date_inventory" readonly="1"/>
+              <field name="date_confirm" readonly="1"/>
+              <field name="date_count_started" readonly="1"/>
+              <field name="date_count_finished" readonly="1"/>
+              <field name="date_adjusment" readonly="1"/>
+            </group>
+          </group>
+          <group >
+            <group>
+              <field name="warehouse_id" attrs="{'readonly': [('state_inventory', '!=', 'draft')]}" />
+              <field name="cmb_location" required="1" attrs="{'readonly': [('state_inventory', '!=', 'draft')]}"/>
+              <label for="loc_stock_id" attrs="{'invisible': [ ('cmb_location', '!=', 'selectedLocation')]}" />
+              <div  class="o_row" attrs="{'invisible': [ ('cmb_location', '!=', 'selectedLocation')]}">
+                <field name="loc_stock_id" widget="many2many_tags"  attrs="{'readonly': [('state_inventory', '!=', 'draft')],'required':[('cmb_location', '=', 'selectedLocation')]}"/>
+                <label for="children_location" />
+                <div  class="o_row">
+                  <field name="children_location" widget="boolean_toggle" string="ubicaciones hijas" attrs="{'invisible': [ ('cmb_location', '!=', 'selectedLocation')]}" />
+                </div>
+              </div>
+              <field name="cmb_products" attrs="{'readonly': [('state_inventory', '!=', 'draft')]}"/>
+             
+            </group>
+           
+          <group attrs="{'invisible': [('state_inventory', 'not in', ('count_finished','adjustment_made'))]}">
+            <separator string="Resultados" />
+            <group>
+              <field name="presicion"  widget="percentage" readonly="1"/>
+              <field name="amount_dif" widget="monetary"  readonly="1"/>
+              <field name="currency_id"  invisible="1"/>
+            </group>
+          </group>
+          </group>
+          
+
+          <group>
+            <group>
+              <div class="o_row" invisible="1">
+                <h3 style="color: red;">¡Este inventario está en proceso de reconteo!</h3>
+                <p style="color: red;">El resumen de diferencias se calculará nuevamente al finalizar el reconteo.</p>
+              </div>
+            </group>
+            <group>
+              <!-- También puedes usar un div para mayor personalización -->
+              <div class="o_row" attrs="{'invisible': [('state_inventory', '!=', 'recount')]}">
+                <h3 style="color: red;">¡Este inventario está en proceso de reconteo!</h3>
+                <p style="color: red;">El resumen de diferencias se calculará nuevamente al finalizar el reconteo.</p>
+              </div>
+            </group>
+          </group>
+
+          <label for="product_id" attrs="{'invisible': ['|',('cmb_products','in', ('allProduct','blind_count')),('state_inventory', '!=', 'draft')]}" />
+          <div  class="o_row" attrs="{'invisible': ['|',('cmb_products', 'in', ('allProduct','blind_count')),('state_inventory', '!=', 'draft')]}">
+            <field name="product_id"  attrs="{'invisible': ['|',('cmb_products', 'in', ('allProduct','blind_count')),('state_inventory', '!=', 'draft')]}" context="{'default_detailed_type': 'product', 'search_default_consumable': True}"  options="{'no_create':True, 'no_create_edit':True}">
+              <tree>
+                <field name="name"/>
+                <field name="barcode"/>
+              </tree>
+            </field>
+            <div  class="o_row">
+              <button name="clean_product"  attrs="{'invisible': ['|',('cmb_products', '=', 'allProduct'),('state_inventory', '!=', 'draft')]}"  type="object" string="Limpiar productos" class="oe_highlight"/>
+            </div>
+          </div>
+          <notebook  attrs="{'invisible': [('state_inventory', '!=', 'draft')]}">
+            <page string="Equipo de inventario" name="team">
+              <field name="users_team_ids"  domain="[('groups_id.name', '=', '02. Contador')]">
+                <tree >
+                  <field name="name"/>
+                  <field name="login"/>
+                </tree>
+              </field>
+            </page>
+          </notebook>
+        </sheet>
+        <div class="oe_chatter">
+          <field name="message_follower_ids"/>
+          <field name="activity_ids"/>
+          <field name="message_ids"/>
+        </div>
+      </form>
+    </field>
+  </record>
+  <record id="view_physical_inventory_tree" model="ir.ui.view">
+    <field name="name">physical.inventory.tree.view</field>
+    <field name="model">physical.inventory</field>
+    <field name="type">tree</field>
+    <field name="arch" type="xml">
+      <tree string="My Model Report"   >
+        <field name="date_inventory" />
+        <field name="name" />
+        <field name="warehouse_id" />
+        <field name="type"/>
+        <field name="user_id" />
+        <field name="aprove" readonly="1"/>
+        <field name="state_inventory"  decoration-success="state_inventory == 'adjustment_made'" decoration-warning="state_inventory == 'confirmed'" decoration-danger="state_inventory == 'canceled'" widget="badge"  />
+      </tree>
+    </field>
+  </record>
+  <record id="view_physical_inventory_search_view" model="ir.ui.view">
+    <field name="name">physical.inventory.search</field>
+    <field name="model">physical.inventory</field>
+    <field eval="10" name="priority"/>
+    <field name="arch" type="xml">
+      <search string="Margin">
+        <field name="name"/>
+        <field name="reference"/>
+        <field name="warehouse_id" />
+        <field name="user_id" />
+        <filter name="filter_process" domain="[('state_inventory', 'in', ('confirmed','count_started','count_finished'))]" 
+          string="En proceso"/>
+        <filter name="filter_process" domain="[('state_inventory', '=', 'adjustment_made')]" 
+          string="Ajuste realizado"/>
+        <filter name="filter_process" domain="[('state_inventory', '=', 'count_finished'),('aprove', '=', False)]" 
+          string="Por aprobar"/>
+        <group expand='0' string='Group by...'>
+          <filter string='Fecha' name="date_inventory_group" context="{'group_by': 'date_inventory'}"/>
+          <filter string='Almacen' name="warehouse_id_group" domain="[]" context="{'group_by': 'warehouse_id'}"/>
+          <filter string='Responsable' name="user_id_group" domain="[]" context="{'group_by': 'user_id'}"/>
+          <filter string='Tipo' name="type_group" domain="[]" context="{'group_by': 'type'}"/>
+          <filter string='Estado' name="type_state" domain="[]" context="{'group_by': 'state_inventory'}"/>
+        </group>
+      </search>
+    </field>
+  </record>
+  <record id="view_move_form_inventory" model="ir.ui.view">
+    <field name="name">stock.move.formview</field>
+    <field name="model">stock.move</field>
+    <field name="inherit_id" ref="stock.view_move_form"/>
+    <field name="arch" type="xml">
+      <xpath expr="//field[@name='reference']" position="after">
+        <field name="inventory_id"/>
+      </xpath>
+    </field>
+  </record>
+  <record id="action_inventory_physical_view" model="ir.actions.act_window">
+    <field name="name">Inventarios fisicos</field>
+    <field name="res_model">physical.inventory</field>
+    <field name="view_mode">tree,form</field>
+    <field name="view_id" ref="view_physical_inventory_tree"/>
+  </record>
+  <menuitem id="menu_inventory_physical"
+            name="Inventario fisico"
+            action="action_inventory_physical_view"
+            parent="stock.menu_stock_warehouse_mgmt"
+            sequence="10"/>
+
+            <record id="action_physical_inventory_line_cancel" model="ir.actions.server">
+              <field name="name">Cancelar Conteo</field>
+              <field name="model_id" ref="mk_physical_inventory.model_physical_inventory_line"/>
+              <field name="state">code</field>
+              <field name="code">model.setCancel()</field>
+              <field name="binding_model_id" ref="mk_physical_inventory.model_physical_inventory_line"/>
+              <field name="binding_type">action</field>
+              <!-- Esto asegura que la acción aparezca en el menú de acciones -->
+            </record>
+</odoo>

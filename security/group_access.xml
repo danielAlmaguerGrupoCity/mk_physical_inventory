@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data noupdate="1">
+    <record model="ir.module.category" id="mk_physical_inventory_category">
+        <field name="name">Proceso de inventario</field>
+        <!--field name="parent_id" ref="base.module_category_accounting_and_finance"/-->
+        <field name="description">Gestion de toma de inventarios fisicos</field>
+        <field name="sequence">30</field>
+    </record>
+
+    <record id="mk_physical_inventory_admin" model="res.groups">
+        <field name="name">01. Administrador de inventario</field>
+        <field name="category_id" ref="mk_physical_inventory_category"/>
+    </record>
+
+    <record id="mk_physical_inventory_counter" model="res.groups">
+        <field name="name">02. Contador</field>
+        <field name="category_id" ref="mk_physical_inventory_category"/>
+    </record>
+
+    <record id="mk_physical_inventory_admin_store" model="res.groups">
+        <field name="name">03. Aprobador de inventario</field>
+        <field name="category_id" ref="mk_physical_inventory_category"/>
+    </record>
+
+    <record id="mk_physical_inventory_admin_read" model="res.groups">
+        <field name="name">04. Usuario de lectura</field>
+        <field name="category_id" ref="mk_physical_inventory_category"/>
+    </record>
+
+    <record id="mk_physical_inventory_apply" model="res.groups">
+        <field name="name">05. Aplicador de ajuste</field>
+        <field name="category_id" ref="mk_physical_inventory_category"/>
+    </record>
+
+    
+
+   
+
+
+</data>
+</odoo>
