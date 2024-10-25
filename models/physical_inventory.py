@@ -82,14 +82,16 @@ class physicalInventory(models.Model):
     product_id = fields.Many2many(
         'product.product', string='Selección',
         change_default=True, ondelete='restrict', check_company=True)  # Unrequired company
-    presicion = fields.Float("Precisión")
-    amount_dif = fields.Monetary(string='Diferencia', currency_field='currency_id')
+    presicion = fields.Float("Precisión",compute='_calculate_inventory_data',default=0)
+    amount_dif = fields.Monetary(string='Diferencia', compute='_calculate_inventory_data' ,default=0,currency_field='currency_id')
     currency_id = fields.Many2one(related='company_id.currency_id', string='Company Currency',
         readonly=True, store=True,
         help='Utility field to express amount currency')
     
-    def calculate_inventory_data(self):
+    @api.depends('state_inventory')
+    def _calculate_inventory_data(self):
         for record in self:
+          if record.state_inventory == "count_finished":
             # Obtener la suma de product_qty_dif_mon
             filtered_records = record.inventory_adjusment.filtered(lambda r: r.product_uom_qty_dif == 0)
     
@@ -100,7 +102,7 @@ class physicalInventory(models.Model):
                 sum_product_qty_dif_mon = 0
             
             
-            sum_product_uom =         sum(record.inventory_adjusment.mapped('product_qty_dif_mon'))
+            sum_product_uom = sum(record.inventory_adjusment.mapped('product_qty_dif_mon'))
 
 
             # Obtener la cantidad de registros en inventory_adjusment
@@ -109,10 +111,12 @@ class physicalInventory(models.Model):
             # Ahora puedes usar `product_qty_dif_mon` y `number_of_records` como quieras
             # Por ejemplo, mostrarlo en el log
             
-         
-            self.presicion  = sum_product_qty_dif_mon / number_of_records
-            self.amount_dif = sum_product_uom
-        
+            if number_of_records:
+             self.presicion  = sum_product_qty_dif_mon / number_of_records
+             self.amount_dif = sum_product_uom
+          else:
+             self.presicion  =1
+             self.amount_dif = 1
         
     def clean_product(self):
              ctx = self.env.context.copy()
@@ -444,7 +448,7 @@ class physicalInventory(models.Model):
          self.date_count_finished = fields.Datetime.now()
         
          
-         self.calculate_inventory_data()
+         self.__calculate_inventory_data()
          _logger.info(f"**************************************antes de encender el cron")
          self.check_cron_status(True)
            #Actualiza el dominio del campo lot_stock_id      
@@ -609,7 +613,7 @@ class physicalInventory(models.Model):
            self.date_adjusment = fields.Datetime.now()     
            self.state_inventory= "adjustment_made"    
            
-           self.calculate_inventory_data()
+           self._calculate_inventory_data()
            _logger.info(f"**************************************antes de encender el cron")
            self.check_cron_status(True)
            
