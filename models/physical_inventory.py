@@ -323,8 +323,7 @@ class physicalInventory(models.Model):
        
         
     def finish_count(self):
-         _logger.info(f"**************************************antes de apagar el cron")
-         self.check_cron_status(False)
+         
          product_non_count = []
           # Buscar y eliminar todas las líneas de ajuste relacionadas
          act_next = self.env.context.get('act_next')
@@ -369,7 +368,8 @@ class physicalInventory(models.Model):
                    'res_id' : wizard_id.id,
                    'context' : ctx
                }  
-            
+         _logger.info(f"**************************************antes de apagar el cron")
+         self.check_cron_status(False)  
          stock_quant_id = self.env['stock.quant']
          product_obj = self.env['product.product']
          products = product_obj.search([
@@ -448,7 +448,7 @@ class physicalInventory(models.Model):
          self.date_count_finished = fields.Datetime.now()
         
          
-         self.__calculate_inventory_data()
+         self._calculate_inventory_data()
          _logger.info(f"**************************************antes de encender el cron")
          self.check_cron_status(True)
            #Actualiza el dominio del campo lot_stock_id      
